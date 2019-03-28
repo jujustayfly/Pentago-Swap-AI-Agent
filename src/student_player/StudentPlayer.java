@@ -36,8 +36,8 @@ public class StudentPlayer extends PentagoPlayer {
 		if (boardState.getTurnNumber() == 0) {
 			myMove = MyTools.getMove0(boardState);
 			return myMove;
-			
-		}else if(boardState.getTurnNumber()==1) {
+
+		} else if (boardState.getTurnNumber() == 1) {
 			myMove = MyTools.getMove1(boardState);
 			return myMove;
 		}
