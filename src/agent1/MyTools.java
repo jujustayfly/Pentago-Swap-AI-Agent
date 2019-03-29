@@ -1,4 +1,4 @@
-package student_player;
+package agent1;
 
 /* Greedy Agent 
  * 1- Finds best move within any of 4 quadrants
@@ -22,11 +22,12 @@ public class MyTools {
 		PentagoMove firstmove = new PentagoMove(1, 1, Quadrant.TL, Quadrant.BL, boardstate.getTurnPlayer());
 		if (boardstate.isLegal(firstmove)) {
 			return firstmove;
-		} else {
+		}
+		else {
 			firstmove = new PentagoMove(4, 1, Quadrant.TL, Quadrant.BL, boardstate.getTurnPlayer());
 			if (boardstate.isLegal(firstmove)) {
 				return firstmove;
-			} else {
+			}else {
 				return new PentagoMove(1, 4, Quadrant.TL, Quadrant.BL, boardstate.getTurnPlayer());
 			}
 		}
@@ -42,7 +43,7 @@ public class MyTools {
 	}
 
 	public static Move getMove(PentagoBoardState boardState) {
-
+		
 		return null;
 	}
 }
