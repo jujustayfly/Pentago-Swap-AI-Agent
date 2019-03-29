@@ -20,6 +20,8 @@ public class Agent1 extends PentagoPlayer {
 		super("Agent_v1.0");
 	}
 
+	
+	
 	/**
 	 * This is the primary method that you need to implement. The ``boardState``
 	 * object contains the current state of the game, which your agent must use to
@@ -33,6 +35,8 @@ public class Agent1 extends PentagoPlayer {
 		// declaring variables
 		Move myMove;
 		int turn = boardState.getTurnNumber();
+		
+		
 		
 		System.out.println("!!!!!");
 		System.out.println(turn);

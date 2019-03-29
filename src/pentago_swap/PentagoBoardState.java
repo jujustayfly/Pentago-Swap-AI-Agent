@@ -65,7 +65,7 @@ public class PentagoBoardState extends BoardState {
     private int winner;
     private Random rand;
 
-    PentagoBoardState() {
+    public PentagoBoardState() {
         super();
         this.board = new Piece[BOARD_SIZE][BOARD_SIZE];
         for (int i = 0; i < BOARD_SIZE; i++) {
