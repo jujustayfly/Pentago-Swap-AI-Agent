@@ -6,6 +6,7 @@ import pentago_swap.PentagoMove;
 
 import java.util.ArrayList;
 
+import boardgame.Board;
 import boardgame.Move;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
@@ -59,5 +60,17 @@ public class MyTools {
 			}
 		}
 		return true;
+	}
+	
+	public static void printWinner(PentagoBoardState pbs) {
+		
+		if (pbs.getWinner() == pbs.getTurnPlayer()) {
+			System.out.println("******YOU WIN****");
+		}
+		else if (pbs.getWinner() == Board.DRAW) {
+			System.out.println("******DRAW****");
+		}else if (pbs.getWinner()!=Board.NOBODY) {
+			System.out.println("******YOU LOSE****");
+		}
 	}
 }

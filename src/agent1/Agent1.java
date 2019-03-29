@@ -20,13 +20,14 @@ public class Agent1 extends PentagoPlayer {
 		super("Agent_v1.0");
 	}
 
-	
+	MonteCarlo mcSearch;
 	
 	/**
 	 * This is the primary method that you need to implement. The ``boardState``
 	 * object contains the current state of the game, which your agent must use to
 	 * make decisions.
 	 */
+	
 	public Move chooseMove(PentagoBoardState boardState) {
 		// You probably will make separate functions in MyTools.
 		// For example, maybe you'll need to load some pre-processed best opening
@@ -35,24 +36,22 @@ public class Agent1 extends PentagoPlayer {
 		// declaring variables
 		Move myMove;
 		int turn = boardState.getTurnNumber();
+		mcSearch = new MonteCarlo(boardState);
 		
 		
-		
-		System.out.println("!!!!!");
-		System.out.println(turn);
-		System.out.println("!!!!!");
+//		System.out.println("!!!!!");
+//		System.out.println(turn);
+//		System.out.println("!!!!!");
 		// play move 0
 		if (boardState.getTurnNumber() == 0) {
 			myMove = MyTools.getMove0(boardState);
+			
 			return myMove;
 		}
 		else {
-			myMove = MyTools.getMove(boardState);
+			
+			return(mcSearch.FindBestMove(10000));
 		}
-
-		myMove = boardState.getRandomMove();
-
-		// Return your move to be processed by the server.
-		return myMove;
+		
 	}
 }

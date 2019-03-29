@@ -32,9 +32,9 @@ public class StudentPlayer extends PentagoPlayer {
 		// declaring variables
 		Move myMove;
 		int turn = boardState.getTurnNumber();
-		System.out.println("!!!!!");
-		System.out.println(turn);
-		System.out.println("!!!!!");
+//		System.out.println("!!!!!");
+//		System.out.println(turn);
+//		System.out.println("!!!!!");
 		// play move 0
 		if (boardState.getTurnNumber() == 0) {
 			myMove = MyTools.getMove0(boardState);
