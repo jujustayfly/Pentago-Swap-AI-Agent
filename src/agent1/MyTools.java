@@ -1,15 +1,17 @@
-package student_player;
+package agent1;
 
-/* Greedy Agent 
+/* MonteCarlo
  * */
 import pentago_swap.PentagoMove;
 
 import java.util.ArrayList;
 
+import boardgame.Board;
 import boardgame.Move;
 import pentago_swap.PentagoBoardState;
 import pentago_swap.PentagoBoardState.Piece;
 import pentago_swap.PentagoBoardState.Quadrant;
+import pentago_swap.PentagoCoord;
 
 public class MyTools {
 	public static double getSomething() {
@@ -32,37 +34,43 @@ public class MyTools {
 	}
 
 	public static PentagoMove getMove1(PentagoBoardState boardstate) {
-		PentagoMove firstmove = new PentagoMove(1, 1, Quadrant.TL, Quadrant.BL, boardstate.getTurnPlayer());
-		if (boardstate.isLegal(firstmove)) {
-			return firstmove;
-		} else {
-			return new PentagoMove(4, 1, Quadrant.TL, Quadrant.BL, boardstate.getTurnPlayer());
-		}
+		return null;
 	}
 
 	public static Move getMove(PentagoBoardState boardState) {
-
 		return null;
 	}
-	
-	public Piece[][] GetBoard(PentagoBoardState pbs){
+
+	public static Piece[][] GetBoard(PentagoBoardState pbs) {
 		Piece[][] board = new Piece[6][6];
-		for(int i = 0;i<pbs.BOARD_SIZE;i++) {
-			for(int j = 0;j<pbs.BOARD_SIZE;j++) {
-				board[i][j]=pbs.getPieceAt(i, j);
+		for (int i = 0; i < pbs.BOARD_SIZE; i++) {
+			for (int j = 0; j < pbs.BOARD_SIZE; j++) {
+				board[i][j] = pbs.getPieceAt(i, j);
 			}
 		}
 		return board;
 	}
-	
-	public boolean checkBoardsEqual(Piece[][] board1, Piece[][] board2) {
-		for(int i = 0;i<6;i++) {
-			for(int j = 0;j<6;j++) {
-				if(board1[i][j]!=board2[i][j]) {
+
+	public static boolean checkBoardsEqual(Piece[][] board1, Piece[][] board2) {
+		for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 6; j++) {
+				if (board1[i][j] != board2[i][j]) {
 					return false;
 				}
 			}
 		}
 		return true;
+	}
+	
+	public static void printWinner(PentagoBoardState pbs) {
+		
+		if (pbs.getWinner() == pbs.getTurnPlayer()) {
+			System.out.println("******YOU WIN****");
+		}
+		else if (pbs.getWinner() == Board.DRAW) {
+			System.out.println("******DRAW****");
+		}else if (pbs.getWinner()!=Board.NOBODY) {
+			System.out.println("******YOU LOSE****");
+		}
 	}
 }
