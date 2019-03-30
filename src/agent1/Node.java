@@ -69,7 +69,7 @@ public class Node {
 		if (this.attempts == 0.0) {
 			this.UCB1 = Double.MAX_VALUE;
 		} else {
-			this.UCB1 = this.score + 2 * Math.sqrt(Math.log((double) (this.parent.attempts / this.attempts)));
+			this.UCB1 = (this.score/this.attempts) + 2 * Math.sqrt(Math.log1p((double) (this.parent.attempts / this.attempts)));
 		}
 	}
 

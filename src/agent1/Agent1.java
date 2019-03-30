@@ -50,7 +50,7 @@ public class Agent1 extends PentagoPlayer {
 		}
 		else {
 			
-			return(mcSearch.FindBestMove(10000));
+			return(mcSearch.FindBestMove(5000));
 		}
 		
 	}
