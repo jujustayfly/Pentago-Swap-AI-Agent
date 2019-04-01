@@ -1,0 +1,13 @@
+1,Human,GreedyAgent,1,GreedyAgent,7,game00001.log,
+2,Human,Agent_v1.0,GAMEOVER USER CANCEL UNDECIDED,NOBODY,2,game00002.log,USER CANCEL
+3,Human,GreedyAgent,GAMEOVER USER CANCEL UNDECIDED,NOBODY,1,game00003.log,USER CANCEL
+4,Human,GreedyAgent,0,Human,4,game00004.log,
+5,Human,GreedyAgent,0,Human,4,game00005.log,
+6,GreedyAgent,Human,1,Human,6,game00006.log,
+7,GreedyAgent,RandomPlayer,0,GreedyAgent,5,game00007.log,
+8,GreedyAgent,Human,0,GreedyAgent,6,game00008.log,
+9,GreedyAgent,Human,0,GreedyAgent,6,game00009.log,
+10,GreedyAgent,Human,1,Human,8,game00010.log,
+12,GreedyAgent,Human,1,Human,0,game00012.log,TIMEOUT
+13,GreedyAgent,Human,GAMEOVER USER CANCEL UNDECIDED,NOBODY,6,game00013.log,USER CANCEL
+14,GreedyAgent,Human,1,Human,5,game00014.log,

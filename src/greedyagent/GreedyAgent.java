@@ -16,7 +16,7 @@ public class GreedyAgent extends PentagoPlayer {
 	 * associate you with your agent. The constructor should do nothing else.
 	 */
 	public GreedyAgent() {
-		super("260614548");
+		super("GreedyAgent");
 	}
 
 	/**
@@ -32,8 +32,7 @@ public class GreedyAgent extends PentagoPlayer {
 		// declaring variables
 		Move myMove;
 		BoardAnalyzer analyzer = new BoardAnalyzer(boardState);
-
-		myMove = boardState.getRandomMove();
+		myMove = analyzer.FindBestMove(0);
 
 		// Return your move to be processed by the server.
 		return myMove;
