@@ -27,6 +27,8 @@ public class BoardAnalyzer {
 	private int[][][] diagonalPotentials = new int[4][3][3];
 	private int[][][] superposedPotentials = new int[4][3][3];
 	private int[][][] sumedPotentials = new int[4][3][3];
+	private int[][][] finalPlayerPotential= new int [4][3][3];
+	private int[][][] finalBestMove= new int [4][3][3];
 	private Piece mycolor;
 	private Piece opponent;
 
@@ -34,25 +36,97 @@ public class BoardAnalyzer {
 		this.pbs = boardState;
 	}
 
-	public Move FindBestMove(int param) {
+	public Move FindBestMove() {
 		GetMyColor();
 		if (canIWin() != null) {
 			return canIWin();
 		}
 		GetQuadrants();
+		// We first do our move value calculations from player perspective
 		AssignMoveValues();
-
-		if (param == 0) {
-			SuperposePotentials();
-		}
-		if (param == 1) {
-			SumPotentials();
-		}
+		SuperposePotentials();
 		UpdateMacroPotentials();
+		//Now we switch our perspective and compute move values from opponent perspective
+		SwitchPerspectives();
+		AssignMoveValues();
+		SuperposePotentials();
+		UpdateMacroPotentials();
+		
+		UpdatefinalBestMove();
+		System.out.println("Printing opponent perspective");
+		PrintValuesBoardfromQuadrants(superposedPotentials);
+		System.out.println("Printing player perspective");
+		PrintValuesBoardfromQuadrants(finalPlayerPotential);
+		System.out.println("Printing final perspective");
+
+		PrintValuesBoardfromQuadrants(finalBestMove);
 		PentagoMove mymove = ExtractMove();
 
 		return mymove;
 
+	}
+
+	private void UpdatefinalBestMove() {
+		for(int i = 0 ;i<4;i++) {
+			for(int j =0; j<3;j++) {
+				for(int k=0; k<3;k++) {
+				finalBestMove[i][j][k]= maxFinalMove(i,j,k);
+				}
+			}
+		}
+		
+	}
+
+	private int maxFinalMove(int i, int j, int k) {
+		if(superposedPotentials[i][j][k]>finalPlayerPotential[i][j][k]) {
+			return superposedPotentials[i][j][k];
+		}
+		return finalPlayerPotential[i][j][k];
+	}
+
+	private void SwitchPerspectives() {
+		//first copy our player potential
+		//this is a bit hacky but seems like less code to modify overall
+		// since we simply save our calculations
+		// then inverse the player colors
+		// then rerun the process
+		// this was developed because otherwise the agent can lose
+		// to some very greedy strategy which do not go through
+		// any quadrant centers
+		// it also allows to play track the game state from both perspectives
+		for(int i = 0 ;i<4;i++) {
+			for(int j =0; j<3;j++) {
+				for(int k=0; k<3;k++) {
+					finalPlayerPotential[i][j][k]= superposedPotentials[i][j][k];
+				}
+			}
+		}
+		
+		if (mycolor==Piece.BLACK) {
+			mycolor=Piece.WHITE;
+			opponent= Piece.BLACK;
+		}
+		else {
+			opponent=Piece.WHITE;
+			mycolor= Piece.BLACK;
+		}
+		
+		verticalPotentials = new int[4][3][3];
+		horizontalPotentials = new int[4][3][3];
+		diagonalPotentials = new int[4][3][3];
+		superposedPotentials = new int[4][3][3];
+		
+	}
+
+	
+
+	
+
+
+
+	private void UpdateDefenseMicro() {
+	
+		
 	}
 
 	private PentagoMove ExtractMove() {
@@ -63,9 +137,9 @@ public class BoardAnalyzer {
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < 3; j++) {
 					for (int k = 0; k < 3; k++) {
-						if (superposedPotentials[i][j][k] > max) {
+						if (finalBestMove[i][j][k] > max) {
 
-							max = superposedPotentials[i][j][k];
+							max = finalBestMove[i][j][k];
 							coordinates[0] = i;
 							coordinates[1] = j;
 							coordinates[2] = k;
@@ -109,7 +183,7 @@ public class BoardAnalyzer {
 		PentagoBoardState temp = (PentagoBoardState) pbs.clone();
 		temp.processMove(tobechecked);
 		PentagoBoardState temp2 = (PentagoBoardState) temp.clone();
-		for (PentagoMove trial : temp2.getAllLegalMoves()) {
+		for (PentagoMove trial : temp.getAllLegalMoves()) {
 			temp2 = (PentagoBoardState) temp.clone();
 			temp2.processMove(trial);
 			if (temp2.getWinner() == temp2.getOpponent()) {
@@ -163,74 +237,98 @@ public class BoardAnalyzer {
 	}
 
 	private void UpdateMacroPotentials() {
-		if (!(has3verticalLeft() == -1)) {
+		//Method logically checks for winning
+		//directions. This is have 3 lined up 
+		//in a quadrant either vertically, diagonally,
+		//or vertically. It can also be having 2 lined up
+		// in a side diagonal and 1 in other corresponding
+		// side diagonal (in another quadrant)
+		if (!(has3verticalLeft(mycolor) == -1)) {
 			UpdateMacroVerticalLeft();
 		}
-		if (!(has3verticalMiddle() == -1)) {
+		if (!(has3verticalMiddle(mycolor) == -1)) {
 			UpdateMacroVerticalMiddle();
 		}
-		if (!(has3verticalRight() == -1)) {
+		if (!(has3verticalRight(mycolor) == -1)) {
 			UpdateMacroVerticalRight();
 		}
-		if (!(has3horizontalTop() == -1)) {
+		if (!(has3horizontalTop(mycolor) == -1)) {
 			UpdateMacroHorizontalTop();
 		}
-		if (!(has3horizontalMiddle() == -1)) {
+		if (!(has3horizontalMiddle(mycolor) == -1)) {
 			UpdateMacroHorizontalMiddle();
 		}
-		if (!(has3horizontalBottom() == -1)) {
+		if (!(has3horizontalBottom(mycolor) == -1)) {
 			UpdateMacroHorizontalBottom();
 		}
-		if (!(has3NegDiagonal() == -1)) {
+		if (!(has3NegDiagonal(mycolor) == -1)) {
 			UpdateMacroNegDiag();
 		}
-		if (!(has3PosDiagonal() == -1)) {
+		if (!(has3PosDiagonal(mycolor) == -1)) {
 			UpdateMacroPosDiag();
 		}
-		if (!(hasSmallDiagPosTop2and1().size() == 0)) {
-			UpdateSmallDiagPosTop2and1(hasSmallDiagPosTop2and1());
+		if (!(hasSmallDiagPosTop2and1(mycolor).size() == 0)) {
+			UpdateSmallDiagPosTop2and1(hasSmallDiagPosTop2and1(mycolor));
 
 		}
-		if (!(hasSmallDiagPosBot2and1().size() == 0)) {
-			UpdateSmallDiagPosBot2and1(hasSmallDiagPosBot2and1());
+		if (!(hasSmallDiagPosBot2and1(mycolor).size() == 0)) {
+			UpdateSmallDiagPosBot2and1(hasSmallDiagPosBot2and1(mycolor));
 		}
-		if (!(hasSmallDiagNegTop2and1().size() == 0)) {
-			UpdateSmallDiagNegTop2and1(hasSmallDiagNegTop2and1());
+		if (!(hasSmallDiagNegTop2and1(mycolor).size() == 0)) {
+			UpdateSmallDiagNegTop2and1(hasSmallDiagNegTop2and1(mycolor));
 		}
-		if (!(hasSmallDiagNegBot2and1().size() == 0)) {
-			UpdateSmallDiagNegBot2and1(hasSmallDiagNegBot2and1());
+		if (!(hasSmallDiagNegBot2and1(mycolor).size() == 0)) {
+			UpdateSmallDiagNegBot2and1(hasSmallDiagNegBot2and1(mycolor));
 		}
 
 	}
 
 	private void UpdateSmallDiagNegBot2and1(ArrayList<Integer> quads) {
 		for (int i : quads) {
+			if(superposedPotentials[i][1][0]>=0)
 			superposedPotentials[i][1][0] += 3;
+			if(superposedPotentials[i][2][1]>=0)
 			superposedPotentials[i][2][1] += 3;
+			if(superposedPotentials[i][0][2]>=0)
+				superposedPotentials[i][0][2] += 3;
 		}
 
 	}
 
 	private void UpdateSmallDiagNegTop2and1(ArrayList<Integer> quads) {
 		for (int i : quads) {
+			if(superposedPotentials[i][0][1]>=0)
 			superposedPotentials[i][0][1] += 3;
+			if(superposedPotentials[i][1][2]>=0)
 			superposedPotentials[i][1][2] += 3;
+			if(superposedPotentials[i][2][0]>=0)
+				superposedPotentials[i][2][0] += 3;
 		}
 
 	}
 
 	private void UpdateSmallDiagPosBot2and1(ArrayList<Integer> quads) {
 		for (int i : quads) {
+			if(superposedPotentials[i][2][1]>=0)
 			superposedPotentials[i][2][1] += 3;
+			if(superposedPotentials[i][1][2]>=0)
 			superposedPotentials[i][1][2] += 3;
+			if(superposedPotentials[i][0][0]>=0)
+			superposedPotentials[i][0][0] += 3;
+
 		}
 
 	}
 
 	private void UpdateSmallDiagPosTop2and1(ArrayList<Integer> quads) {
 		for (int i : quads) {
+			if(superposedPotentials[i][0][1]>=0)
 			superposedPotentials[i][0][1] += 3;
+			if(superposedPotentials[i][1][0]>=0)
 			superposedPotentials[i][1][0] += 3;
+			if(superposedPotentials[i][2][0]>=0)
+				superposedPotentials[i][2][0]+=3;
+
 		}
 
 	}
@@ -238,6 +336,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroPosDiag() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][2][0]!=0 && superposedPotentials[i][1][1]!=0  && superposedPotentials[i][0][2]!=0) {
+						superposedPotentials[i][1][1]+=2;
+					}
+				}
 				if ((superposedPotentials[i][2 - j][j] >= 2)) {
 					superposedPotentials[i][2 - j][j] += 3;
 				}
@@ -249,6 +352,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroNegDiag() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][0][0]!=0 && superposedPotentials[i][2][2]!=0  && superposedPotentials[i][1][1]!=0) {
+						superposedPotentials[i][1][1]+=2;
+					}
+				}
 				if ((superposedPotentials[i][j][j] >= 2)) {
 					superposedPotentials[i][j][j] += 3;
 				}
@@ -260,6 +368,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroHorizontalBottom() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][2][1]!=0 && superposedPotentials[i][2][0]!=0  && superposedPotentials[i][2][2]!=0) {
+						superposedPotentials[i][2][1]+=3;
+					}
+				}
 				if ((superposedPotentials[i][2][j] >= 2)) {
 					superposedPotentials[i][2][j] += 3;
 				}
@@ -271,6 +384,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroHorizontalMiddle() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][1][1]!=0 && superposedPotentials[i][1][0]!=0  && superposedPotentials[i][1][2]!=0) {
+						superposedPotentials[i][1][1]+=3;
+					}
+				}
 				if ((superposedPotentials[i][1][j] >= 2)) {
 					superposedPotentials[i][1][j] += 3;
 				}
@@ -282,6 +400,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroHorizontalTop() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][0][1]!=0 && superposedPotentials[i][0][0]!=0  && superposedPotentials[i][0][2]!=0) {
+						superposedPotentials[i][0][1]+=3;
+					}
+				}
 				if ((superposedPotentials[i][0][j] >= 2)) {
 					superposedPotentials[i][0][j] += 3;
 				}
@@ -293,6 +416,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroVerticalRight() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][0][2]!=0 && superposedPotentials[i][2][2]!=0  && superposedPotentials[i][1][2]!=0) {
+						superposedPotentials[i][1][2]+=3;
+					}
+				}
 				if ((superposedPotentials[i][j][2] >= 2)) {
 					superposedPotentials[i][j][2] += 3;
 				}
@@ -303,6 +431,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroVerticalMiddle() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][0][1]!=0 && superposedPotentials[i][2][1]!=0  && superposedPotentials[i][1][1]!=0) {
+						superposedPotentials[i][1][1]+=3;
+					}
+				}
 				if ((superposedPotentials[i][j][1] >= 2)) {
 					superposedPotentials[i][j][1] += 3;
 				}
@@ -314,6 +447,11 @@ public class BoardAnalyzer {
 	private void UpdateMacroVerticalLeft() {
 		for (int i = 0; i < 4; i++) {
 			for (int j = 0; j < 3; j++) {
+				if(j==1) {
+					if(superposedPotentials[i][0][0]!=0 && superposedPotentials[i][2][0]!=0  && superposedPotentials[i][1][0]!=0) {
+						superposedPotentials[i][1][0]+=3;
+					}
+				}
 				if ((superposedPotentials[i][j][0] >= 2)) {
 					superposedPotentials[i][j][0] += 3;
 				}
@@ -322,7 +460,7 @@ public class BoardAnalyzer {
 
 	}
 
-	private ArrayList<Integer> hasSmallDiagNegBot2and1() {
+	private ArrayList<Integer> hasSmallDiagNegBot2and1(Piece color) {
 		boolean has2 = false;
 		boolean has1 = false;
 		int has2quad = -1;
@@ -330,7 +468,7 @@ public class BoardAnalyzer {
 		ArrayList<Integer> quads = new ArrayList<Integer>();
 		// check for 2
 		for (int i = 0; i < 4; i++) {
-			if (quadrants[i][1][0] == mycolor && quadrants[i][2][1] == mycolor) {
+			if (quadrants[i][1][0] == mycolor && quadrants[i][2][1] == color) {
 				has2 = true;
 				has2quad = i;
 			}
@@ -338,14 +476,28 @@ public class BoardAnalyzer {
 		// check for 1 in different quadrant
 		if (has2) {
 			for (int i = 0; i < 4; i++) {
-				if (quadrants[i][0][2] == mycolor && i != has2quad) {
+				if (i != has2quad) {
+					if(quadrants[i][0][2] == mycolor) {
 					has1 = true;
 					has1quad = i;
-				}
+					}
+					else if(quadrants[i][1][0] == mycolor && quadrants[i][2][1] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][2][1]+=5;
+					}
+					else if(quadrants[i][2][1] == mycolor && quadrants[i][1][0] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][1][0]+=5;
+						
+					}
+					
+				} 
 			}
 			if (has1) {
 				for (int i = 0; i < 4; i++) {
-					if (i != has2quad && i != has1quad) {
+					if (i != has2quad) {
 						quads.add(i);
 					}
 				}
@@ -354,7 +506,7 @@ public class BoardAnalyzer {
 		return quads;
 	}
 
-	private ArrayList<Integer> hasSmallDiagNegTop2and1() {
+	private ArrayList<Integer> hasSmallDiagNegTop2and1(Piece color) {
 		boolean has2 = false;
 		boolean has1 = false;
 		int has2quad = -1;
@@ -362,7 +514,7 @@ public class BoardAnalyzer {
 		ArrayList<Integer> quads = new ArrayList<Integer>();
 		// check for 2
 		for (int i = 0; i < 4; i++) {
-			if (quadrants[i][0][1] == mycolor && quadrants[i][1][2] == mycolor) {
+			if (quadrants[i][0][1] == mycolor && quadrants[i][1][2] == color) {
 				has2 = true;
 				has2quad = i;
 			}
@@ -370,14 +522,33 @@ public class BoardAnalyzer {
 		// check for 1 in different quadrant
 		if (has2) {
 			for (int i = 0; i < 4; i++) {
-				if (quadrants[i][2][0] == mycolor && i != has2quad) {
+				if (i != has2quad) {
+					if(quadrants[i][2][0] == mycolor) {
 					has1 = true;
 					has1quad = i;
-				}
+					}
+					else if(quadrants[i][1][2] == mycolor && quadrants[i][0][1] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][0][1]+=5;
+					}
+					else if(quadrants[i][0][1] == mycolor && quadrants[i][1][2] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][1][2]+=5;
+						
+					}}
+//				if ((quadrants[i][2][0] == mycolor ||
+//						(quadrants[i][1][2] == mycolor && quadrants[i][0][1] == Piece.EMPTY)||
+//						(quadrants[i][0][1] == mycolor && quadrants[i][1][2] == Piece.EMPTY)
+//						) && i != has2quad) {
+//					has1 = true;
+//					has1quad = i;
+//				}
 			}
 			if (has1) {
 				for (int i = 0; i < 4; i++) {
-					if (i != has2quad && i != has1quad) {
+					if (i != has2quad) {
 						quads.add(i);
 					}
 				}
@@ -386,7 +557,7 @@ public class BoardAnalyzer {
 		return quads;
 	}
 
-	private ArrayList<Integer> hasSmallDiagPosBot2and1() {
+	private ArrayList<Integer> hasSmallDiagPosBot2and1(Piece color) {
 		boolean has2 = false;
 		boolean has1 = false;
 		int has2quad = -1;
@@ -394,7 +565,7 @@ public class BoardAnalyzer {
 		ArrayList<Integer> quads = new ArrayList<Integer>();
 		// check for 2
 		for (int i = 0; i < 4; i++) {
-			if (quadrants[i][2][1] == mycolor && quadrants[i][1][2] == mycolor) {
+			if (quadrants[i][2][1] == mycolor && quadrants[i][1][2] == color) {
 				has2 = true;
 				has2quad = i;
 			}
@@ -402,14 +573,34 @@ public class BoardAnalyzer {
 		// check for 1 in different quadrant
 		if (has2) {
 			for (int i = 0; i < 4; i++) {
-				if (quadrants[i][0][0] == mycolor && i != has2quad) {
+				if (i != has2quad) {
+					if(quadrants[i][0][0] == mycolor) {
 					has1 = true;
 					has1quad = i;
-				}
+					}
+					else if(quadrants[i][2][1] == mycolor && quadrants[i][1][2] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][1][2]+=5;
+					}
+					else if(quadrants[i][1][2] == mycolor && quadrants[i][2][1] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][2][1]+=5;
+						
+					}
+			}
+//				if ((quadrants[i][0][0] == mycolor ||
+//						(quadrants[i][2][1] == mycolor && quadrants[i][1][2] == Piece.EMPTY)||
+//						(quadrants[i][1][2] == mycolor && quadrants[i][2][1] == Piece.EMPTY)
+//						)&& i != has2quad) {
+//					has1 = true;
+//					has1quad = i;
+//				}
 			}
 			if (has1) {
 				for (int i = 0; i < 4; i++) {
-					if (i != has2quad && i != has1quad) {
+					if (i != has2quad ) {
 						quads.add(i);
 					}
 				}
@@ -418,7 +609,7 @@ public class BoardAnalyzer {
 		return quads;
 	}
 
-	private ArrayList<Integer> hasSmallDiagPosTop2and1() {
+	private ArrayList<Integer> hasSmallDiagPosTop2and1(Piece color) {
 		boolean has2 = false;
 		boolean has1 = false;
 		int has2quad = -1;
@@ -426,7 +617,7 @@ public class BoardAnalyzer {
 		ArrayList<Integer> quads = new ArrayList<Integer>();
 		// check for 2
 		for (int i = 0; i < 4; i++) {
-			if (quadrants[i][0][1] == mycolor && quadrants[i][1][0] == mycolor) {
+			if (quadrants[i][0][1] == mycolor && quadrants[i][1][0] == color) {
 				has2 = true;
 				has2quad = i;
 			}
@@ -434,14 +625,34 @@ public class BoardAnalyzer {
 		// check for 1 in different quadrant
 		if (has2) {
 			for (int i = 0; i < 4; i++) {
-				if (quadrants[i][2][2] == mycolor && i != has2quad) {
+				if (i != has2quad) {
+					if(quadrants[i][2][2] == mycolor) {
 					has1 = true;
 					has1quad = i;
-				}
+					}
+					else if(quadrants[i][0][1] == mycolor && quadrants[i][1][0] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][1][0]+=5;
+					}
+					else if(quadrants[i][0][1] == mycolor && quadrants[i][0][1] == Piece.EMPTY) {
+						has1 = true;
+						has1quad = i;
+						superposedPotentials[i][1][0]+=5;
+						
+					}
+			}
+//				if ((quadrants[i][2][2] == mycolor ||
+//						(quadrants[i][0][1] == mycolor && quadrants[i][1][0] == Piece.EMPTY)||
+//						(quadrants[i][1][0] == mycolor && quadrants[i][0][1] == Piece.EMPTY)
+//						)&& i != has2quad) {
+//					has1 = true;
+//					has1quad = i;
+//				}
 			}
 			if (has1) {
 				for (int i = 0; i < 4; i++) {
-					if (i != has2quad && i != has1quad) {
+					if (i != has2quad) {
 						quads.add(i);
 					}
 				}
@@ -450,13 +661,13 @@ public class BoardAnalyzer {
 		return quads;
 	}
 
-	private int has3PosDiagonal() {
+	private int has3PosDiagonal(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][2 - j][j] == mycolor)) {
+				if (!(quadrants[i][2 - j][j] == color)) {
 					has3 = false;
 				}
 			}
@@ -467,13 +678,13 @@ public class BoardAnalyzer {
 		return -1;
 	}
 
-	private int has3NegDiagonal() {
+	private int has3NegDiagonal(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][j][j] == mycolor)) {
+				if (!(quadrants[i][j][j] == color)) {
 					has3 = false;
 				}
 			}
@@ -485,7 +696,7 @@ public class BoardAnalyzer {
 
 	}
 
-	private int has3horizontalBottom() {
+	private int has3horizontalBottom(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
@@ -502,13 +713,13 @@ public class BoardAnalyzer {
 		return -1;
 	}
 
-	private int has3horizontalMiddle() {
+	private int has3horizontalMiddle(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][1][j] == mycolor)) {
+				if (!(quadrants[i][1][j] == color)) {
 					has3 = false;
 				}
 			}
@@ -519,13 +730,13 @@ public class BoardAnalyzer {
 		return -1;
 	}
 
-	private int has3horizontalTop() {
+	private int has3horizontalTop(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][0][j] == mycolor)) {
+				if (!(quadrants[i][0][j] == color)) {
 					has3 = false;
 				}
 			}
@@ -536,13 +747,13 @@ public class BoardAnalyzer {
 		return -1;
 	}
 
-	private int has3verticalMiddle() {
+	private int has3verticalMiddle(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][j][1] == mycolor)) {
+				if (!(quadrants[i][j][1] == color)) {
 					has3 = false;
 				}
 			}
@@ -554,13 +765,13 @@ public class BoardAnalyzer {
 
 	}
 
-	private int has3verticalRight() {
+	private int has3verticalRight(Piece color) {
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][j][2] == mycolor)) {
+				if (!(quadrants[i][j][2] == color)) {
 					has3 = false;
 				}
 			}
@@ -571,13 +782,20 @@ public class BoardAnalyzer {
 		return -1;
 	}
 
-	private int has3verticalLeft() {
+	private int has3verticalLeft(Piece color) {
+		// METHOD CHECKS TO SEE IF
+		// PLAYER HAS 3 lined up vertically on the left
+		// column in any quadrant
+		// if it finds such a quadrant it returns the index of this quadrant
+		// otherwise returns -1
+		
+		
 		boolean has3;
 
 		for (int i = 0; i < 4; i++) {
 			has3 = true;
 			for (int j = 0; j < 3; j++) {
-				if (!(quadrants[i][j][0] == mycolor)) {
+				if (!(quadrants[i][j][0] == color)) {
 					has3 = false;
 				}
 			}
@@ -681,9 +899,9 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][1][1] == Piece.EMPTY && quadrants[i][2][2] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 2;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][2] == Piece.EMPTY) {
-					getDiagonalPotentials()[i][j][k] += 4;
+					getDiagonalPotentials()[i][j][k] += 6;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][2] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][2] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 3;
 				} else {
@@ -698,9 +916,9 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][0][0] == Piece.EMPTY && quadrants[i][2][2] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 2;
 				} else if (quadrants[i][0][0] == mycolor && quadrants[i][2][2] == Piece.EMPTY) {
-					getDiagonalPotentials()[i][j][k] += 4;
+					getDiagonalPotentials()[i][j][k] += 6;
 				} else if (quadrants[i][0][0] == mycolor && quadrants[i][2][2] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][0][0] == mycolor && quadrants[i][2][2] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 3;
 				} else if (quadrants[i][0][0] == opponent && quadrants[i][2][2] == Piece.EMPTY) {
@@ -722,7 +940,7 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][0] == Piece.EMPTY) {
 					getDiagonalPotentials()[i][j][k] += 4;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][0] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][0] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 3;
 				} else {
@@ -774,11 +992,11 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][1][1] == Piece.EMPTY && quadrants[i][0][2] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 2;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][2] == Piece.EMPTY) {
-					getDiagonalPotentials()[i][j][k] += 4;
+					getDiagonalPotentials()[i][j][k] += 6;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][2] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][0][2] == opponent) {
-					getDiagonalPotentials()[i][j][k] += 3;
+					getDiagonalPotentials()[i][j][k] += 4;
 				} else {
 					System.out.println("Error calculating Pos Slope Potential");
 				}
@@ -793,7 +1011,7 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][0][2] == mycolor && quadrants[i][2][0] == Piece.EMPTY) {
 					getDiagonalPotentials()[i][j][k] += 4;
 				} else if (quadrants[i][0][2] == mycolor && quadrants[i][2][0] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][0][2] == mycolor && quadrants[i][2][0] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 3;
 				} else if (quadrants[i][0][2] == opponent && quadrants[i][2][0] == Piece.EMPTY) {
@@ -813,9 +1031,9 @@ public class BoardAnalyzer {
 				} else if (quadrants[i][1][1] == Piece.EMPTY && quadrants[i][2][0] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 2;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][0] == Piece.EMPTY) {
-					getDiagonalPotentials()[i][j][k] += 4;
+					getDiagonalPotentials()[i][j][k] += 6;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][0] == mycolor) {
-					getDiagonalPotentials()[i][j][k] += 5;
+					getDiagonalPotentials()[i][j][k] += 7;
 				} else if (quadrants[i][1][1] == mycolor && quadrants[i][2][0] == opponent) {
 					getDiagonalPotentials()[i][j][k] += 3;
 				} else {

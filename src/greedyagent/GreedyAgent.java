@@ -32,7 +32,7 @@ public class GreedyAgent extends PentagoPlayer {
 		// declaring variables
 		Move myMove;
 		BoardAnalyzer analyzer = new BoardAnalyzer(boardState);
-		myMove = analyzer.FindBestMove(0);
+		myMove = analyzer.FindBestMove();
 
 		// Return your move to be processed by the server.
 		return myMove;
