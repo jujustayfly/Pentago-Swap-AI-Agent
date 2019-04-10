@@ -1,4 +1,4 @@
-package greedyagent;
+package student_player;
 
 import java.util.ArrayList;
 
