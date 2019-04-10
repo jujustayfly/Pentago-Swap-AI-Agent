@@ -8,9 +8,9 @@ Comp 424 Project
 <br/>
 <br/>
 Implemented Agents: <br/>
--Agent 1 <br/>
+-Agent 1: <br/>
 Agent 1 uses random outcome porpagation to balance the exploration of all nodes<br/>
--Minimax Agent <br/>
+-Minimax Agent: <br/>
 Tries to run minimax algorithm. However shows poor performance with timeouts <br/>
 -Greedy Agent: <br/>
 Best agent developed. Agent computes offensive and defensive move potentials are decides on a move based on calculations. Used in tournament submission. Find Details in attached project report.<br/>
