@@ -1,4 +1,4 @@
-package student_player;
+package greedyagent;
 
 import boardgame.Move;
 
@@ -8,15 +8,15 @@ import pentago_swap.PentagoBoardState.Quadrant;
 import pentago_swap.PentagoMove;
 
 /** A player file submitted by a student. */
-public class StudentPlayer extends PentagoPlayer {
+public class GreedyAgent extends PentagoPlayer {
 
 	/**
 	 * You must modify this constructor to return your student number. This is
 	 * important, because this is what the code that runs the competition uses to
 	 * associate you with your agent. The constructor should do nothing else.
 	 */
-	public StudentPlayer() {
-		super("260614548");
+	public GreedyAgent() {
+		super("GreedyAgent");
 	}
 
 	/**

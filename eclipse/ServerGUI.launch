@@ -9,4 +9,5 @@
 <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="boardgame.ServerGUI"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="pentago-swap"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Xms520m -Xmx520m"/>
 </launchConfiguration>
