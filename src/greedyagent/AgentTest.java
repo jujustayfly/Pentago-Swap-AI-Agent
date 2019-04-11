@@ -26,6 +26,7 @@ public class AgentTest {
 	@Test
 	public void TestPotentialScores() {
 		pbs = new PentagoBoardState();
+		System.out.println("Printing Board");
 		pbs.printBoard();
 		BoardAnalyzer analyzer = new BoardAnalyzer(pbs);
 		analyzer.GetQuadrants();
@@ -42,6 +43,7 @@ public class AgentTest {
 	public void TestPotentialScores2() {
 		pbs = new PentagoBoardState();
 		pbs.processMove((PentagoMove) pbs.getRandomMove());
+		System.out.println("Printing Board");
 		pbs.printBoard();
 		BoardAnalyzer analyzer = new BoardAnalyzer(pbs);
 		analyzer.GetMyColor();
@@ -60,6 +62,8 @@ public class AgentTest {
 		pbs = new PentagoBoardState();
 		pbs.processMove((PentagoMove) pbs.getRandomMove());
 		pbs.processMove((PentagoMove) pbs.getRandomMove());
+		System.out.println("Printing Board");
+
 		pbs.printBoard();
 		BoardAnalyzer analyzer = new BoardAnalyzer(pbs);
 		analyzer.GetMyColor();

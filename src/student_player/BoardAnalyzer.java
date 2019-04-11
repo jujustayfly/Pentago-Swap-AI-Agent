@@ -22,9 +22,13 @@ public class BoardAnalyzer {
 	private PentagoBoardState pbs;
 	private Piece[][][] quadrants = new Piece[4][3][3];
 	private int[][][] placeValues = new int[4][3][3];
+	
+	
 	private int[][][] verticalPotentials = new int[4][3][3];
 	private int[][][] horizontalPotentials = new int[4][3][3];
 	private int[][][] diagonalPotentials = new int[4][3][3];
+	
+	
 	private int[][][] superposedPotentials = new int[4][3][3];
 	private int[][][] sumedPotentials = new int[4][3][3];
 	private int[][][] finalPlayerPotential= new int [4][3][3];
